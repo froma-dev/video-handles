@@ -1,44 +1,47 @@
 import {useState, useRef} from 'react'
 import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import VideoPlayer from '@components/VideoPlayer'
-import {VideoPlayerType} from "./types/VideoPlayerTypes.ts";
+import {VideoPlayerHandles, VideoPlayerType} from "./types/VideoPlayerTypes.ts";
 
 function App() {
     const [src, setSrc] = useState('')
     const srcInputRef = useRef<HTMLInputElement>(null)
+    const videoPlayerRef = useRef<VideoPlayerHandles>(null)
     const [videoPlayerType] = useState<VideoPlayerType>('shaka')
 
-    const onLoadVideo = () => {
+    const onLoadVideoClicked = () => {
         const $srcInput = srcInputRef.current
         const newSrc = $srcInput?.value
         const isSameSrc = newSrc === src
         
-        if (newSrc && !isSameSrc) setSrc(() => newSrc)
+        if (newSrc && !isSameSrc)
+            setSrc(() => newSrc)
+    }
+
+    const onPauseClicked = () => {
+        videoPlayerRef.current?.pause()
+    }
+
+    const onPlayClicked = () => {
+        videoPlayerRef.current?.play()
     }
 
     return (
         <>
             <div>
-                <a href="https://vite.dev" target="_blank">
-                    <img src={viteLogo} className="logo" alt="Vite logo"/>
-                </a>
                 <a href="https://react.dev" target="_blank">
                     <img src={reactLogo} className="logo react" alt="React logo"/>
                 </a>
             </div>
-            <h1>Vite + React</h1>
+            <h1>Shaka here</h1>
+            <VideoPlayer videoPlayerType={videoPlayerType} src={src} ref={videoPlayerRef} />
             <div className="card">
                 <input type="text" ref={srcInputRef}></input>
-                <button onClick={onLoadVideo}>
-                    Load video
-                </button>
-                <p>
-                    Edit <code>src/App.tsx</code> and save to test HMR
-                </p>
+                <button onClick={onLoadVideoClicked}>Load video</button>
+                <button onClick={onPlayClicked}>Play</button>
+                <button onClick={onPauseClicked}>Pause</button>
             </div>
-            <VideoPlayer videoPlayerType={videoPlayerType} src={src} />
         </>
     )
 }
