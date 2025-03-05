@@ -19,12 +19,10 @@ const VideoPlayer = ({videoPlayerType = playerTypeName, src, ref}: VideoPlayerPr
                 $video?.pause()
             },
             fastForward(seconds) {
-                if ($video)
-                    $video.currentTime += seconds
+                if ($video) $video.currentTime += seconds
             },
             rewind(seconds) {
-                if ($video)
-                    $video.currentTime -= seconds
+                if ($video) $video.currentTime -= seconds
             }
         }
     })

@@ -4,27 +4,29 @@ import type {VideoPlayerHookProps} from '../types/VideoPlayerTypes'
 
 const playerTypeName = 'shaka'
 let player: shaka.Player
-const attachMediaElement = async ($video: HTMLVideoElement) => {
-    await player.attach($video)
-}
+
 export const useShakaPlayer = ({videoRef, src, videoPlayerType}: VideoPlayerHookProps) => {
-    useEffect(() => {
+    const initPlayer = () => {
         shaka.polyfill.installAll();
 
-        if (shaka.Player.isBrowserSupported()) {
-            player = new shaka.Player()
-        } else console.error('Browser not supported!')
-    }, [])
-
-    useEffect(() => {
+        if (shaka.Player.isBrowserSupported()) player = new shaka.Player()
+        else console.error('Browser not supported!')
+    }
+    const attachMediaElement = () => {
         const $video = videoRef?.current
 
-        if ($video) attachMediaElement($video)
-    }, [videoRef])
+        async function attach() {
+            if (!$video) return
 
-    useEffect(() => {
+            await player.attach($video)
+        }
+
+        if($video && videoPlayerType === playerTypeName) attach()
+    }
+    const loadSrc = () => {
         if (videoPlayerType === playerTypeName && src && player) {
-            player.load(src)
+            player
+                .load(src)
                 .catch((err: shaka.util.error) => {
                     console.log(`Could not load src ${src}`, err);
                 })
@@ -35,5 +37,9 @@ export const useShakaPlayer = ({videoRef, src, videoPlayerType}: VideoPlayerHook
                 }
             }
         }
-    }, [src, videoPlayerType])
+    }
+
+    useEffect(initPlayer, [])
+    useEffect(attachMediaElement, [videoPlayerType, videoRef])
+    useEffect(loadSrc, [src, videoPlayerType])
 }

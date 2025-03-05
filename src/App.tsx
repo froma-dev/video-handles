@@ -27,6 +27,14 @@ function App() {
         videoPlayerRef.current?.play()
     }
 
+    const onStepFastForward = () => {
+        videoPlayerRef.current?.fastForward(4)
+    }
+
+    const onStepRewind = () => {
+        videoPlayerRef.current?.rewind(4)
+    }
+
     return (
         <>
             <div>
@@ -41,6 +49,8 @@ function App() {
                 <button onClick={onLoadVideoClicked}>Load video</button>
                 <button onClick={onPlayClicked}>Play</button>
                 <button onClick={onPauseClicked}>Pause</button>
+                <button onClick={onStepFastForward}>+10</button>
+                <button onClick={onStepRewind}>-10</button>
             </div>
         </>
     )
