@@ -2,12 +2,12 @@ import {useState, useRef} from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
 import VideoPlayer from '@components/VideoPlayer'
-import {VideoPlayerHandles, VideoPlayerType} from "./types/VideoPlayerTypes.ts";
+import {VideoPlayerControls, VideoPlayerType} from "./types/VideoPlayerTypes.ts";
 
 function App() {
     const [src, setSrc] = useState('')
     const srcInputRef = useRef<HTMLInputElement>(null)
-    const videoPlayerRef = useRef<VideoPlayerHandles>(null)
+    const videoPlayerControlsRef = useRef<VideoPlayerControls>(null)
     const [videoPlayerType] = useState<VideoPlayerType>('shaka')
 
     const onLoadVideoClicked = () => {
@@ -20,19 +20,19 @@ function App() {
     }
 
     const onPauseClicked = () => {
-        videoPlayerRef.current?.pause()
+        videoPlayerControlsRef.current?.pause()
     }
 
     const onPlayClicked = () => {
-        videoPlayerRef.current?.play()
+        videoPlayerControlsRef.current?.play()
     }
 
     const onStepFastForward = () => {
-        videoPlayerRef.current?.fastForward(4)
+        videoPlayerControlsRef.current?.fastForward(4)
     }
 
     const onStepRewind = () => {
-        videoPlayerRef.current?.rewind(4)
+        videoPlayerControlsRef.current?.rewind(4)
     }
 
     return (
@@ -43,7 +43,7 @@ function App() {
                 </a>
             </div>
             <h1>Shaka here</h1>
-            <VideoPlayer videoPlayerType={videoPlayerType} src={src} ref={videoPlayerRef} />
+            <VideoPlayer videoPlayerType={videoPlayerType} src={src} videoPlayerControlsRef={videoPlayerControlsRef} />
             <div className="card">
                 <input type="text" ref={srcInputRef}></input>
                 <button onClick={onLoadVideoClicked}>Load video</button>

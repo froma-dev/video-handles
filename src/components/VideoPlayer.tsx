@@ -1,32 +1,15 @@
 import {VideoPlayerProps, VideoPlayerType} from '../types/VideoPlayerTypes';
 import {useShakaPlayer} from '@hooks/useShakaPlayer'
 import {useEffect, useRef, useImperativeHandle} from 'react'
+import {usePlayerControls} from "@hooks/usePlayerControls.ts";
 
 const playerTypeName = 'html5' as VideoPlayerType
-const VideoPlayer = ({videoPlayerType = playerTypeName, src, ref}: VideoPlayerProps) => {
+const VideoPlayer = ({videoPlayerType = playerTypeName, src, videoPlayerControlsRef}: VideoPlayerProps) => {
     const videoRef = useRef<HTMLVideoElement>(null)
+    const playerControls = usePlayerControls(videoRef.current)
 
     useShakaPlayer({videoRef, src, videoPlayerType})
-
-    useImperativeHandle(ref, () => {
-        const $video = videoRef.current
-
-        return {
-            play() {
-                $video?.play()
-            },
-            pause() {
-                $video?.pause()
-            },
-            fastForward(seconds) {
-                if ($video) $video.currentTime += seconds
-            },
-            rewind(seconds) {
-                if ($video) $video.currentTime -= seconds
-            }
-        }
-    })
-
+    useImperativeHandle(videoPlayerControlsRef, () => playerControls)
     useEffect(() => {
         const $video = videoRef.current
         const isHtml5Player = playerTypeName === videoPlayerType
@@ -34,7 +17,7 @@ const VideoPlayer = ({videoPlayerType = playerTypeName, src, ref}: VideoPlayerPr
         if (isHtml5Player && $video && src) {
             $video.src = src
         }
-    }, [src, videoPlayerType]);
+    }, [src, videoPlayerType])
 
     return (
         <video id="video"
