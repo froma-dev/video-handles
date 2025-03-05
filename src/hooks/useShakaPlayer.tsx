@@ -11,6 +11,8 @@ export const useShakaPlayer = ({videoRef, src, videoPlayerType}: VideoPlayerHook
 
         if (shaka.Player.isBrowserSupported()) player = new shaka.Player()
         else console.error('Browser not supported!')
+
+        window.shaka = player
     }
     const attachMediaElement = () => {
         const $video = videoRef?.current
