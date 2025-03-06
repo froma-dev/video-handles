@@ -13,5 +13,6 @@ export interface VideoPlayerControls {
     play: () => void;
     pause: () => void;
     fastForward: (s: number) => void;
-    rewind: (s: number) => void
+    rewind: (s: number) => void;
+    seekTo: (t: number) => void;
 }

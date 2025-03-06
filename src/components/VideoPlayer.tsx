@@ -44,6 +44,17 @@ const VideoPlayer = ({videoPlayerType = playerTypeName, src, videoPlayerControls
             $video?.removeEventListener('durationchange', onDurationChange)
         }
     }, []);
+    const onTimelineMouseDown = () => {
+        playerControls.pause()
+    }
+    const onTimelineMouseUp = ({value}: {value: number}) => {
+        playerControls.seekTo(value)
+        playerControls.play()
+    }
+    const onTimelineChange = () => {
+        //playerControls.play()
+        console.log('onTimelineChange')
+    }
 
     return (
         <>
@@ -54,7 +65,12 @@ const VideoPlayer = ({videoPlayerType = playerTypeName, src, videoPlayerControls
                    muted={true}
                    ref={videoRef}>
             </video>
-            <Timeline value={currentTime} duration={duration} onChange={onTimelineChange}/>
+            <Timeline
+                value={currentTime}
+                duration={duration}
+                onMouseDown={onTimelineMouseDown}
+                onMouseUp={onTimelineMouseUp}
+                onChange={onTimelineChange}/>
         </>
     )
 }

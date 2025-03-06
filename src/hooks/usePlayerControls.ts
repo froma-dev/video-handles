@@ -13,6 +13,9 @@ export const usePlayerControls = ($video: HTMLVideoElement | null): VideoPlayerC
         },
         rewind(seconds) {
             if ($video) $video.currentTime -= seconds
+        },
+        seekTo(time) {
+            if ($video) $video.currentTime = time
         }
     }
 }

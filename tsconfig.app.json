@@ -28,8 +28,11 @@
       "@components/*": ["src/components/*"],
       "@hooks/*": ["src/hooks/*"],
       "@styles/*": ["src/styles/*"],
-      "@types/*": ["src/types/*"]
-    }
+      "@types/*": ["src/types/*"],
+      "@utils/*": ["src/utils/*"],
+    },
+
+    "typeRoots": ["./node_modules/@types", "./types"],
   },
   "include": ["src"]
 }

@@ -12,7 +12,7 @@ export const useShakaPlayer = ({videoRef, src, videoPlayerType}: VideoPlayerHook
         if (shaka.Player.isBrowserSupported()) player = new shaka.Player()
         else console.error('Browser not supported!')
 
-        window.shaka = player
+        window.shakaInstance = player
     }
     const attachMediaElement = () => {
         const $video = videoRef?.current
@@ -29,7 +29,7 @@ export const useShakaPlayer = ({videoRef, src, videoPlayerType}: VideoPlayerHook
         if (videoPlayerType === playerTypeName && src && player) {
             player
                 .load(src)
-                .catch((err: shaka.util.error) => {
+                .catch((err: shaka.util.Error) => {
                     console.log(`Could not load src ${src}`, err);
                 })
 
