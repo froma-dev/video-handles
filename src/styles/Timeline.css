@@ -1,0 +1,14 @@
+.timeline {
+    display: flex;
+    width: 100%;
+
+    .input {
+        width: 100%;
+    }
+    .min-value {
+
+    }
+    .max-value {
+
+    }
+}
