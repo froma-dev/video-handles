@@ -9,7 +9,7 @@ const VideoPlayer = ({videoPlayerType = playerTypeName, src, videoPlayerControls
     const videoRef = useRef<HTMLVideoElement>(null)
     const playerControls = usePlayerControls(videoRef.current)
     const [currentTime, setCurrentTime] = useState(0)
-    const [duration, setDuration] = useState(0)
+    const [duration, setDuration] = useState(2);
 
     useShakaPlayer({videoRef, src, videoPlayerType})
     useImperativeHandle(videoPlayerControlsRef, () => playerControls)
@@ -47,7 +47,7 @@ const VideoPlayer = ({videoPlayerType = playerTypeName, src, videoPlayerControls
     const onTimelineMouseDown = () => {
         playerControls.pause()
     }
-    const onTimelineMouseUp = ({value}: {value: number}) => {
+    const onTimelineMouseUp = ({value}: { value: number }) => {
         playerControls.seekTo(value)
         playerControls.play()
     }

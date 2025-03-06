@@ -1,47 +1,49 @@
-import {useEffect} from "react"
-import shaka from 'shaka-player'
-import type {VideoPlayerHookProps} from '../types/VideoPlayerTypes'
+import { useEffect } from "react";
+import shaka from "shaka-player";
+import type { VideoPlayerHookProps } from "../types/VideoPlayerTypes";
 
-const playerTypeName = 'shaka'
-let player: shaka.Player
+const playerTypeName = "shaka";
+let player: shaka.Player;
 
-export const useShakaPlayer = ({videoRef, src, videoPlayerType}: VideoPlayerHookProps) => {
-    const initPlayer = () => {
-        shaka.polyfill.installAll();
+export const useShakaPlayer = ({
+  videoRef,
+  src,
+  videoPlayerType,
+}: VideoPlayerHookProps) => {
+  const initPlayer = () => {
+    shaka.polyfill.installAll();
 
-        if (shaka.Player.isBrowserSupported()) player = new shaka.Player()
-        else console.error('Browser not supported!')
+    if (shaka.Player.isBrowserSupported()) player = new shaka.Player();
+    else console.error("Browser not supported!");
 
-        window.shakaInstance = player
+    window.shakaInstance = player;
+  };
+  const attachMediaElement = () => {
+    const $video = videoRef?.current;
+
+    async function attach() {
+      if (!$video) return;
+
+      await player.attach($video);
     }
-    const attachMediaElement = () => {
-        const $video = videoRef?.current
 
-        async function attach() {
-            if (!$video) return
+    if ($video && videoPlayerType === playerTypeName) attach();
+  };
+  const loadSrc = () => {
+    if (videoPlayerType === playerTypeName && src && player) {
+      player.load(src).catch((err: shaka.util.Error) => {
+        console.log(`Could not load src ${src}`, err);
+      });
 
-            await player.attach($video)
+      return () => {
+        if (player.status === "stop") {
+          player.destroy();
         }
-
-        if($video && videoPlayerType === playerTypeName) attach()
+      };
     }
-    const loadSrc = () => {
-        if (videoPlayerType === playerTypeName && src && player) {
-            player
-                .load(src)
-                .catch((err: shaka.util.Error) => {
-                    console.log(`Could not load src ${src}`, err);
-                })
+  };
 
-            return () => {
-                if (player.status === 'stop') {
-                    player.destroy()
-                }
-            }
-        }
-    }
-
-    useEffect(initPlayer, [])
-    useEffect(attachMediaElement, [videoPlayerType, videoRef])
-    useEffect(loadSrc, [src, videoPlayerType])
-}
+  useEffect(initPlayer, []);
+  useEffect(attachMediaElement, [videoPlayerType, videoRef]);
+  useEffect(loadSrc, [src, videoPlayerType]);
+};
