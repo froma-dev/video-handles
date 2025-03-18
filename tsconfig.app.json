@@ -30,6 +30,9 @@
       "@styles/*": ["src/styles/*"],
       "@types/*": ["src/types/*"],
       "@utils/*": ["src/utils/*"],
+      "@src/*": ["src/*"],
+      "@pages/*": ["src/pages/*"],
+      "@routes/*": ["src/routes/*"],
     },
 
     "typeRoots": ["./node_modules/@types", "./types"],
