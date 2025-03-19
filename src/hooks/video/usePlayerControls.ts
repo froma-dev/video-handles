@@ -1,21 +1,56 @@
-import {VideoPlayerControls} from "../types/VideoPlayerTypes.ts";
+import { playerConfig } from "@src/config.ts";
 
-export const usePlayerControls = ($video: HTMLVideoElement | null): VideoPlayerControls => {
+interface VideoPlayerControls {
+    play: () => void;
+    pause: () => void;
+    fastForward: () => void;
+    rewind: () => void;
+    seekTo: (t: number) => void;
+    isPlaying: () => boolean;
+    getCurrentTime: () => number;
+    getDuration: () => number;
+    playPause: () => void;
+}
+
+const usePlayerControls = ($video: HTMLVideoElement | null): VideoPlayerControls => {
     return {
         play() {
-            $video?.play()
+            return $video?.play()
         },
         pause() {
             $video?.pause()
         },
-        fastForward(seconds) {
-            if ($video) $video.currentTime += seconds
+        playPause() {
+            if ($video && this.isPlaying()) $video.pause();
+            else $video?.play();
         },
-        rewind(seconds) {
-            if ($video) $video.currentTime -= seconds
+        fastForward() {
+            if ($video && this.isPlaying()) {
+                $video.currentTime += playerConfig.fastForward
+            }
         },
-        seekTo(time) {
-            if ($video) $video.currentTime = time
-        }
+        rewind() {
+            if ($video) {
+                $video.currentTime -= playerConfig.rewind
+            }
+        },
+        seekTo(time: number) {
+            if ($video) {
+                $video.currentTime = time
+            }
+        },
+        isPlaying() {
+            return $video?.paused === false
+        },
+        getCurrentTime() {
+            return $video?.currentTime || 0
+        },
+        getDuration() {
+            return $video?.duration || 0
+        },
+
     }
 }
+
+export default usePlayerControls;
+export type { VideoPlayerControls };
