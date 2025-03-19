@@ -1,11 +1,13 @@
 import { useShakaPlayer } from "@hooks/video/useShakaPlayer";
-import { useEffect, useRef, useImperativeHandle, useState } from "react";
-import usePlayerControls, {
-  type VideoPlayerControls,
-} from "@hooks/video/usePlayerControls.ts";
-import { Timeline } from "@components/Player/Timeline";
+import { useRef, useImperativeHandle } from "react";
+import usePlayerControls from "@hooks/video/usePlayerControls.ts";
 import { playerConfig } from "@src/config.ts";
-import useHTML5Player from "@hooks/video/useHTML5Player";
+//import useHTML5Player from "@hooks/video/useHTML5Player";
+type CurrentTimeProgress = {
+  currentTime: number;
+  progress: number;
+  duration: number;
+};
 
 type VideoPlayerRef = {
   play: () => void;
@@ -17,24 +19,28 @@ type VideoPlayerRef = {
   getCurrentTime: () => number;
   getDuration: () => number;
   playPause: () => void;
+  getProgressTimeDuration: () => CurrentTimeProgress;
 } | null;
 interface VideoPlayerProps {
   src?: string;
   videoPlayerType?: VideoPlayerType;
   ref: React.Ref<VideoPlayerRef>;
+  onTimeUpdate: (currentTimeProgress: CurrentTimeProgress) => void;
+  onDurationChange: (duration: number) => void;
+  seeking: boolean;
 }
+
 type VideoPlayerType = "html5" | "shaka" | "dash";
 
 const VideoPlayer = ({
   videoPlayerType = playerConfig.defaultVideoPlayerType,
   src,
   ref,
+  onTimeUpdate,
+  onDurationChange,
+  seeking,
 }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const playerControls = usePlayerControls(videoRef.current);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [seeking, setSeeking] = useState(false);
 
   const getVideo = () => {
     const $video = videoRef.current;
@@ -88,6 +94,24 @@ const VideoPlayer = ({
     const $video = getVideo();
     return $video?.duration || 0;
   };
+  const getProgress = () => {
+    const $video = getVideo();
+    const currentTime = $video?.currentTime || 0;
+    const duration = $video?.duration || 0;
+    const progress = currentTime / duration || 0;
+
+    return progress;
+  };
+
+  const getProgressTimeDuration = (): CurrentTimeProgress => {
+    const $video = getVideo();
+
+    const currentTime = $video?.currentTime || 0;
+    const duration = $video?.duration || 0;
+    const progress = currentTime / duration || 0;
+
+    return { currentTime, duration, progress };
+  };
 
   useImperativeHandle(ref, () => {
     return {
@@ -100,47 +124,23 @@ const VideoPlayer = ({
       isPlaying,
       getCurrentTime,
       getDuration,
+      getProgressTimeDuration,
     };
   });
 
-  useEffect(() => {
-    const $video = videoRef.current;
-    const onTimeUpdate = () => {
-      const mediaCurrentTime = $video?.currentTime || 0;
-      setCurrentTime(mediaCurrentTime);
-    };
-    const onDurationChange = () => {
-      const $video = videoRef.current;
-      const duration = $video?.duration || 0;
-
-      setDuration(duration);
-    };
-
-    if ($video) {
-      $video?.addEventListener("timeupdate", onTimeUpdate);
-      $video?.addEventListener("durationchange", onDurationChange);
-    }
-
-    return () => {
-      $video?.removeEventListener("timeupdate", onTimeUpdate);
-      $video?.removeEventListener("durationchange", onDurationChange);
-    };
-  }, []);
-
   useShakaPlayer({ videoRef, src, videoPlayerType });
-  useHTML5Player({ videoRef, src, videoPlayerType });
+  //useHTML5Player({ videoRef, src, videoPlayerType });
 
-  const onTimelineMouseDown = () => {
-    playerControls.pause();
-    setSeeking(true);
+  const handleTimeUpdate = () => {
+    const { currentTime, progress, duration } =
+      getProgressTimeDuration();
+
+    if (seeking) return;
+    onTimeUpdate({ currentTime, progress, duration });
   };
-  const onTimelineMouseUp = ({ value }: { value: number }) => {
-    playerControls.seekTo(value);
-    playerControls.play();
-  };
-  const onTimelineChange = () => {
-    //playerControls.play()
-    console.log("onTimelineChange");
+  const handleDurationChange = () => {
+    const duration = getDuration() || 0;
+    onDurationChange(duration);
   };
 
   return (
@@ -153,18 +153,17 @@ const VideoPlayer = ({
         autoPlay
         muted={true}
         ref={videoRef}
-        onSeeking={() => setSeeking(true)}
-        onSeeked={() => setSeeking(false)}
+        onTimeUpdate={handleTimeUpdate}
+        onDurationChange={handleDurationChange}
       ></video>
-      <Timeline
-        onMouseDown={onTimelineMouseDown}
-        onMouseUp={onTimelineMouseUp}
-        onChange={onTimelineChange}
-        videoRef={videoRef}
-      />
     </>
   );
 };
 
 export default VideoPlayer;
-export type { VideoPlayerProps, VideoPlayerType, VideoPlayerRef };
+export type {
+  VideoPlayerProps,
+  VideoPlayerType,
+  VideoPlayerRef,
+  CurrentTimeProgress,
+};
