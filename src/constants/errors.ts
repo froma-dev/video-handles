@@ -1,3 +1,4 @@
+import shaka from "shaka-player";
 
 type MediaErrorCode =
     MediaError["MEDIA_ERR_ABORTED"]
