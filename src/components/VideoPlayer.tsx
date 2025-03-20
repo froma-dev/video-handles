@@ -59,10 +59,19 @@ const VideoPlayer = ({
   }
 
   const handleTimeUpdate = () => {
+    if (seeking && videoRef.current?.seeking) return;
+
     const { currentTime, progress } =
       playerImperativeHandles.getProgressTimeDuration();
 
-    if (seeking) return;
+    console.log(
+      "handleTimeUpdate isSeeking? ",
+      seeking,
+      videoRef.current?.seeking,
+      currentTime,
+      progress
+    );
+
     onTimeUpdate({ currentTime, progress });
   };
   const handleDurationChange = () => {
@@ -85,6 +94,16 @@ const VideoPlayer = ({
     onCanPlayThrough();
   };
 
+  const handleSeeking = () => {
+    console.log("handleSeeking");
+    //onSeeking();
+  };
+
+  const handleSeeked = () => {
+    console.log("handleSeeked");
+    //onSeeked();
+  };
+
   return (
     <>
       <video
@@ -102,6 +121,8 @@ const VideoPlayer = ({
         onPlay={handlePlay}
         onPause={handlePause}
         onCanPlayThrough={handleCanPlayThrough}
+        onSeeking={handleSeeking}
+        onSeeked={handleSeeked}
       ></video>
       {error && <div>Error: {error.message}</div>}
     </>

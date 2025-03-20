@@ -55,6 +55,16 @@ function App() {
     console.log("handleCanPlayThrough");
   };
 
+  const handleChange = (newSeekTime: number) => {
+    console.log("handleChange", newSeekTime);
+  };
+
+  const handleMouseUp = (seekingTime: number) => {
+    console.log("handleMouseUp", seekingTime);
+    videoPlayerRef.current?.seekTo(seekingTime);
+    setSeeking(false);
+  };
+
   const videoPlayerProps = {
     videoPlayerType,
     src,
@@ -77,7 +87,8 @@ function App() {
         duration={duration}
         currentTime={currentTimeProgress.currentTime}
         onMouseDown={() => setSeeking(true)}
-        onMouseUp={() => setSeeking(false)}
+        onMouseUp={handleMouseUp}
+        onChange={handleChange}
       />
 
       <div className="card">
