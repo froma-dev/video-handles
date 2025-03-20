@@ -1,25 +1,26 @@
 import { useState, useRef } from "react";
 import "./App.css";
 import VideoPlayer, {
-  type VideoPlayerRef,
   type VideoPlayerType,
   type CurrentTimeProgress,
 } from "@components/VideoPlayer";
+import { type PlayerImperativeRef } from "@hooks/video/usePlayerImperativeHandle";
 import Controls from "@components/Player/Controls.tsx";
 import { Timeline } from "@components/Player/Timeline";
 
 function App() {
   const [src, setSrc] = useState("");
   const srcInputRef = useRef<HTMLInputElement | null>(null);
-  const videoPlayerRef = useRef<VideoPlayerRef>(null);
+  const videoPlayerRef = useRef<PlayerImperativeRef | null>(null);
   const [seeking, setSeeking] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [videoPlayerType] = useState<VideoPlayerType>("shaka");
   const [currentTimeProgress, setCurrentTimeProgress] =
     useState<CurrentTimeProgress>({
       currentTime: 0,
       progress: 0,
-      duration: 0,
     });
+  const [duration, setDuration] = useState(0);
 
   const handleClickLoadVideo = () => {
     const newSrc = srcInputRef.current?.value;
@@ -30,11 +31,28 @@ function App() {
   };
 
   const handleTimeUpdate = (currentTimeProgress: CurrentTimeProgress) => {
-    setCurrentTimeProgress(currentTimeProgress);
+    setCurrentTimeProgress((prevCurrentTimeProgress) => ({
+      ...prevCurrentTimeProgress,
+      ...currentTimeProgress,
+    }));
   };
 
   const handleDurationChange = (duration: number) => {
-    setCurrentTimeProgress({ ...currentTimeProgress, duration });
+    setDuration(duration);
+  };
+
+  const handlePlayEvent = () => {
+    console.log("handlePlay");
+    setIsPlaying(true);
+  };
+
+  const handlePauseEvent = () => {
+    console.log("handlePause");
+    setIsPlaying(false);
+  };
+
+  const handleCanPlayThroughEvent = () => {
+    console.log("handleCanPlayThrough");
   };
 
   const videoPlayerProps = {
@@ -44,17 +62,19 @@ function App() {
     onTimeUpdate: handleTimeUpdate,
     onDurationChange: handleDurationChange,
     seeking,
+    onPlay: handlePlayEvent,
+    onPause: handlePauseEvent,
+    onCanPlayThrough: handleCanPlayThroughEvent,
   };
 
   return (
     <div className="app">
       <h1>Shaka here</h1>
       <VideoPlayer {...videoPlayerProps} />
-      <Controls videoPlayerRef={videoPlayerRef} />
+      <Controls videoPlayerRef={videoPlayerRef} isPlaying={isPlaying} />
       <Timeline
-        videoPlayerRef={videoPlayerRef}
         progress={currentTimeProgress.progress}
-        duration={currentTimeProgress.duration}
+        duration={duration}
         currentTime={currentTimeProgress.currentTime}
         onMouseDown={() => setSeeking(true)}
         onMouseUp={() => setSeeking(false)}

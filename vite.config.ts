@@ -18,6 +18,7 @@ export default defineConfig({
       "@src": resolve(__dirname, "src"),
       "@pages": resolve(__dirname, "src/pages"),
       "@routes": resolve(__dirname, "src/routes"),
+      "@constants": resolve(__dirname, "src/constants"),
     },
   },
 });

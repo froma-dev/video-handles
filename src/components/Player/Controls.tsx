@@ -3,21 +3,18 @@ import PlayIcon from "@components/Icons/PlayIcon";
 import PauseIcon from "@components/Icons/PauseIcon";
 import RewindIcon from "@components/Icons/RewindIcon";
 import FastForwardIcon from "@components/Icons/FastForwardIcon";
-import { VideoPlayerRef } from "@components/VideoPlayer";
-import { useState } from "react";
+import type { PlayerImperativeRef } from "@hooks/video/usePlayerImperativeHandle";
 
 type ControlsProps = {
-  videoPlayerRef: React.RefObject<VideoPlayerRef>;
+  videoPlayerRef: React.RefObject<PlayerImperativeRef | null>;
+  isPlaying: boolean;
 };
 
-const Controls = ({
-  videoPlayerRef,
-}: ControlsProps) => {
-  const [isPlaying, setIsPlaying] = useState(false);
+const Controls = ({ videoPlayerRef, isPlaying }: ControlsProps) => {
   const ariaLabel = isPlaying ? "Pause" : "Play";
 
   const handleRewind = () => {
-    videoPlayerRef?.current?.rewind();
+    videoPlayerRef.current?.rewind();
   };
 
   const handlePlayPause = () => {
@@ -36,7 +33,11 @@ const Controls = ({
       <Button ariaLabel={ariaLabel} onClick={handlePlayPause} variant="rounded">
         {isPlaying ? <PauseIcon /> : <PlayIcon />}
       </Button>
-      <Button ariaLabel="fast-forward" onClick={handleFastForward} variant="rounded">
+      <Button
+        ariaLabel="fast-forward"
+        onClick={handleFastForward}
+        variant="rounded"
+      >
         <FastForwardIcon />
       </Button>
     </div>

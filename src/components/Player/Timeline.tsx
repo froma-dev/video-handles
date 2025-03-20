@@ -1,10 +1,8 @@
 import { ChangeEvent, MouseEvent, useEffect, useState } from "react";
-import { delay } from "@utils/utils.ts";
 import "@styles/Timeline.css";
 import { playerConfig } from "@src/config";
-import { VideoPlayerRef } from "@components/VideoPlayer";
+
 interface TimelineProps {
-  videoPlayerRef: React.RefObject<VideoPlayerRef>;
   progress: number;
   duration: number;
   currentTime: number;

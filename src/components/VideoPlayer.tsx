@@ -1,146 +1,88 @@
-import { useShakaPlayer } from "@hooks/video/useShakaPlayer";
-import { useRef, useImperativeHandle } from "react";
-import usePlayerControls from "@hooks/video/usePlayerControls.ts";
-import { playerConfig } from "@src/config.ts";
-//import useHTML5Player from "@hooks/video/useHTML5Player";
+import useShakaPlayer from "@hooks/video/useShakaPlayer";
+import { useImperativeHandle, useRef } from "react";
+//import usePlayerControls from "@hooks/video/usePlayerControls.ts";
+import usePlayerImperativeHandle, {
+  PlayerImperativeRef,
+} from "@hooks/video/usePlayerImperativeHandle";
+import { handleError } from "@utils/playerErrorHandler";
 type CurrentTimeProgress = {
   currentTime: number;
   progress: number;
-  duration: number;
 };
 
-type VideoPlayerRef = {
-  play: () => void;
-  pause: () => void;
-  fastForward: () => void;
-  rewind: () => void;
-  seekTo: (t: number) => void;
-  isPlaying: () => boolean;
-  getCurrentTime: () => number;
-  getDuration: () => number;
-  playPause: () => void;
-  getProgressTimeDuration: () => CurrentTimeProgress;
-} | null;
 interface VideoPlayerProps {
   src?: string;
-  videoPlayerType?: VideoPlayerType;
-  ref: React.Ref<VideoPlayerRef>;
+  ref: React.Ref<PlayerImperativeRef>;
   onTimeUpdate: (currentTimeProgress: CurrentTimeProgress) => void;
   onDurationChange: (duration: number) => void;
   seeking: boolean;
+  onPlay: () => void;
+  onPause: () => void;
+  onCanPlayThrough: () => void;
 }
 
 type VideoPlayerType = "html5" | "shaka" | "dash";
 
 const VideoPlayer = ({
-  videoPlayerType = playerConfig.defaultVideoPlayerType,
   src,
   ref,
   onTimeUpdate,
   onDurationChange,
   seeking,
+  onPlay,
+  onPause,
+  onCanPlayThrough,
 }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  const getVideo = () => {
-    const $video = videoRef.current;
-    if (!$video) {
-      console.warn("Video element is not available");
-      return null;
-    }
-    return $video;
-  };
-
-  const play = () => {
-    const $video = getVideo();
-    return $video?.play();
-  };
-  const pause = () => {
-    const $video = getVideo();
-    $video?.pause();
-  };
-  const playPause = () => {
-    const $video = getVideo();
-    if ($video && isPlaying()) $video.pause();
-    else $video?.play();
-  };
-  const fastForward = () => {
-    const $video = getVideo();
-    if ($video && isPlaying()) {
-      $video.currentTime += playerConfig.fastForward;
-    }
-  };
-  const rewind = () => {
-    const $video = getVideo();
-    if ($video) {
-      $video.currentTime -= playerConfig.rewind;
-    }
-  };
-  const seekTo = (time: number) => {
-    const $video = getVideo();
-    if ($video) {
-      $video.currentTime = time;
-    }
-  };
-  const isPlaying = () => {
-    const $video = getVideo();
-    return $video?.paused === false;
-  };
-  const getCurrentTime = () => {
-    const $video = getVideo();
-    return $video?.currentTime || 0;
-  };
-  const getDuration = () => {
-    const $video = getVideo();
-    return $video?.duration || 0;
-  };
-  const getProgress = () => {
-    const $video = getVideo();
-    const currentTime = $video?.currentTime || 0;
-    const duration = $video?.duration || 0;
-    const progress = currentTime / duration || 0;
-
-    return progress;
-  };
-
-  const getProgressTimeDuration = (): CurrentTimeProgress => {
-    const $video = getVideo();
-
-    const currentTime = $video?.currentTime || 0;
-    const duration = $video?.duration || 0;
-    const progress = currentTime / duration || 0;
-
-    return { currentTime, duration, progress };
-  };
-
-  useImperativeHandle(ref, () => {
-    return {
-      play,
-      pause,
-      playPause,
-      fastForward,
-      rewind,
-      seekTo,
-      isPlaying,
-      getCurrentTime,
-      getDuration,
-      getProgressTimeDuration,
-    };
+  const { error } = useShakaPlayer({
+    videoRef,
+    src,
+    onPlaybackError: handlePlaybackError,
   });
 
-  useShakaPlayer({ videoRef, src, videoPlayerType });
-  //useHTML5Player({ videoRef, src, videoPlayerType });
+  const playerImperativeHandles = usePlayerImperativeHandle(videoRef);
+  useImperativeHandle(ref, () => playerImperativeHandles);
+
+  function handlePlaybackError(error: shaka.util.Error) {
+    const errorMessage = handleError(error);
+
+    console.error("PlaybackError>> Error: ", errorMessage);
+  }
+
+  function handleMediaError() {
+    const $video = videoRef.current;
+    const error = $video?.error as MediaError;
+
+    const errorMessage = handleError(error);
+
+    console.error("MediaError>> Error: ", errorMessage);
+  }
 
   const handleTimeUpdate = () => {
-    const { currentTime, progress, duration } =
-      getProgressTimeDuration();
+    const { currentTime, progress } =
+      playerImperativeHandles.getProgressTimeDuration();
 
     if (seeking) return;
-    onTimeUpdate({ currentTime, progress, duration });
+    onTimeUpdate({ currentTime, progress });
   };
   const handleDurationChange = () => {
-    const duration = getDuration() || 0;
+    const duration = playerImperativeHandles.getDuration() || 0;
     onDurationChange(duration);
+  };
+
+  const handlePlay = () => {
+    console.log("handlePlay");
+    onPlay();
+  };
+
+  const handlePause = () => {
+    console.log("handlePause");
+    onPause();
+  };
+
+  const handleCanPlayThrough = () => {
+    console.log("handleCanPlayThrough");
+    onCanPlayThrough();
   };
 
   return (
@@ -153,17 +95,18 @@ const VideoPlayer = ({
         autoPlay
         muted={true}
         ref={videoRef}
+        // Event handlers
         onTimeUpdate={handleTimeUpdate}
         onDurationChange={handleDurationChange}
+        onError={handleMediaError}
+        onPlay={handlePlay}
+        onPause={handlePause}
+        onCanPlayThrough={handleCanPlayThrough}
       ></video>
+      {error && <div>Error: {error.message}</div>}
     </>
   );
 };
 
 export default VideoPlayer;
-export type {
-  VideoPlayerProps,
-  VideoPlayerType,
-  VideoPlayerRef,
-  CurrentTimeProgress,
-};
+export type { VideoPlayerProps, VideoPlayerType, CurrentTimeProgress };

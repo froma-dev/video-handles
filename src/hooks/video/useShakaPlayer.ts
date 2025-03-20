@@ -1,57 +1,95 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import shaka from "shaka-player";
-import { type VideoPlayerType } from "@components/VideoPlayer";
 
-export interface VideoPlayerHookProps {
+interface VideoPlayerHookProps {
   videoRef?: React.RefObject<HTMLVideoElement | null>;
-  src?: string
-  videoPlayerType: VideoPlayerType;
+  src?: string;
+  onPlaybackError?: (error: shaka.util.Error) => void;
 }
 
-const playerTypeName = "shaka";
-let player: shaka.Player;
-
-export const useShakaPlayer = ({
+const useShakaPlayer = ({
   videoRef,
   src,
-  videoPlayerType,
+  onPlaybackError
 }: VideoPlayerHookProps) => {
-  useEffect(initPlayer, []);
-  useEffect(attachMediaElement, [videoPlayerType, videoRef]);
-  useEffect(loadSrc, [src, videoPlayerType]);
+  const [player, setPlayer] = useState<shaka.Player | null>(null);
+  const [error, setError] = useState<shaka.util.Error | null>(null);
+  const [ready, setReady] = useState(false);
 
-  function initPlayer() {
+  useEffect(() => {
+    const isBrowserSupported = shaka.Player.isBrowserSupported();
+    const shakaPlayer: shaka.Player = isBrowserSupported
+      ? new shaka.Player()
+      : null;
     shaka.polyfill.installAll();
+    console.log('useShakaPlayer', shakaPlayer);
 
-    if (shaka.Player.isBrowserSupported()) player = new shaka.Player();
-    else console.error("Browser not supported!");
-
-    // TODO window.shakaInstance = player;
-  }
-
-  function attachMediaElement() {
-    const $video = videoRef?.current;
-
-    async function attach() {
-      if (!$video) return;
-
-      await player.attach($video);
+    const addListeners = () => {
+      shakaPlayer?.addEventListener("error", onPlaybackError);
+    }
+    const removeListeners = () => {
+      shakaPlayer?.removeEventListener("error", onPlaybackError);
     }
 
-    if ($video && videoPlayerType === playerTypeName) attach();
-  }
+    if (isBrowserSupported) {
+      addListeners();
+      setPlayer(shakaPlayer);
+    } else {
+      setError(new shaka.util.Error(
+        shaka.Player.ErrorCode.BROWSER_NOT_SUPPORTED, "Browser not supported!"
+      ));
+    }
 
-  function loadSrc() {
-    if (videoPlayerType === playerTypeName && src && player) {
-      player.load(src).catch((err: shaka.util.Error) => {
+    return () => {
+      shakaPlayer?.destroy();
+      setReady(false);
+      setPlayer(null);
+      removeListeners();
+    }
+  }, []);
+
+  useEffect(() => {
+    const $video = videoRef?.current;
+    console.log("useEffect hay video  vref--> ", $video);
+    console.log("useEffect hay player vref--> ", player);
+    if (!$video) return;
+
+    player?.attach($video)
+      .then(() => {
+        setReady(true);
+      })
+      .catch((err: shaka.util.Error) => {
+        setError(err);
+        setReady(false);
         console.log(`Could not load src ${src}`, err);
       });
 
+    return () => {
+      player?.detach();
+    }
+  }, [videoRef, player]);
+
+  useEffect(() => {
+    if (src && player) {
+      player
+        .load(src)
+        .catch((err: shaka.util.Error) => {
+          setError(err);
+          console.log(`Could not load src ${src}`, err);
+        });
+
       return () => {
-        if (player.status === "stop") {
-          player.destroy();
-        }
+        player.unload();
       };
     }
+  }, [src]);
+
+  return {
+    player,
+    error,
+    ready,
   }
 };
+
+export default useShakaPlayer;
+export type { VideoPlayerHookProps };
