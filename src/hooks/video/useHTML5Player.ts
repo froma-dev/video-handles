@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { playerConfig } from "@src/config";
-import { type VideoPlayerType } from "@components/VideoPlayer";
+import { type VideoPlayerType } from "@src/features/video/components/VideoPlayer";
 
 interface VideoPlayerHookProps {
     videoRef?: React.RefObject<HTMLVideoElement | null>;

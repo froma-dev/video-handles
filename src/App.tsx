@@ -3,7 +3,7 @@ import "./App.css";
 import VideoPlayer, {
   type VideoPlayerType,
   type CurrentTimeProgress,
-} from "@components/VideoPlayer";
+} from "@features/video/components/VideoPlayer";
 import { type PlayerImperativeRef } from "@hooks/video/usePlayerImperativeHandle";
 import Controls from "@components/Player/Controls.tsx";
 import { Timeline } from "@components/Player/Timeline";

@@ -1,4 +1,4 @@
-import { VideoPlayerType } from "@components/VideoPlayer";
+import { VideoPlayerType } from "@src/features/video/components/VideoPlayer";
 
 export const playerConfig = {
     step: 4,
