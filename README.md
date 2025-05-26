@@ -34,3 +34,5 @@ src/
 ├── styles/             # Global styles
 └── utils/              # Utility functions
 ```
+
+![](./public/shakaHere.jpeg)
